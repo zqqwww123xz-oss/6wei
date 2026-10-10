@@ -220,7 +220,11 @@
           "note": "",
           "isPrivate": false,
           "ownerId": null,
-          "scaleNotes": {}
+          "scaleNotes": {
+            "0": "没有水平",
+            "5": "正常人水平",
+            "10": "神水平"
+          }
         },
         {
           "id": "axmv2mvdojbl1l",
@@ -309,11 +313,11 @@
           },
           "axmv2mvdojekjn": {
             "lymv2mvdojrguk": {
-              "value": 6,
+              "value": 7,
               "note": ""
             },
             "lymv2my2m3takk": {
-              "value": 6,
+              "value": 7,
               "note": ""
             }
           },
@@ -421,7 +425,8 @@
     "axmv2mvdoj574d": true
   },
   "expandedNotes": {
-    "c1791279607121_88jg3t|axmv2mvdojekjn|lymv2my2m3takk": false
+    "c1791279607121_88jg3t|axmv2mvdojekjn|lymv2my2m3takk": false,
+    "c1791279607121_88jg3t|axmv2mvdojbl1l|lymv2mvdojrguk": false
   },
   "version": 3
 }

@@ -461,6 +461,21 @@
             margin-top: 6px;
         }
 
+        .load-status {
+            font-size: 12px;
+            color: var(--pink-deep);
+            background: var(--pink-light);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .load-status.show { display: block; }
+        .load-status.error {
+            background: #ffe4ec;
+            color: #c94a4a;
+        }
+
         @media (max-width: 900px) {
             .chart-canvas-wrap { width: 100%; }
         }
@@ -469,6 +484,8 @@
 <body>
 <main>
     <h1>📊 六维图</h1>
+
+    <div class="load-status" id="loadStatus"></div>
 
     <!-- 图表工具栏 -->
     <div class="chart-bar">
@@ -496,7 +513,6 @@
         </div>
 
         <div class="chart-side">
-            <!-- 角色选择 -->
             <div class="sec-panel">
                 <div class="sec-head">
                     <span>🎭 角色选择</span>
@@ -507,7 +523,6 @@
                 </div>
             </div>
 
-            <!-- 图层设置 -->
             <div class="sec-panel">
                 <div class="sec-head">
                     <span>📚 图层顺位</span>
@@ -521,7 +536,6 @@
                 </div>
             </div>
 
-            <!-- 维度设置 -->
             <div class="sec-panel">
                 <div class="sec-head">
                     <span>⚙️ 维度设置</span>
@@ -568,6 +582,7 @@
                 <button class="btn ghost" onclick="document.getElementById('importFile').click()">导入 JSON</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
                 <button class="btn ghost" onclick="reloadCharactersFromFile()">🔄 重新读取角色文件</button>
+                <button class="btn ghost" onclick="reloadChartsFromFile()">🔄 重新读取图表文件</button>
                 <button class="btn danger" onclick="resetAll()">重置所有图表</button>
             </div>
             <div class="hint" id="dataStatus"></div>
@@ -584,8 +599,9 @@
 const FOLDER_AVATAR = 'image/picture/';
 const STORAGE_KEY = 'hyakunin_charts_v3';
 const CHARACTERS_FILE = 'characters-data.json';
-const HARD_CAP = 100;         // 图中表现的最大值，超过视为封顶
-const OVERFLOW_MAX_RATIO = 1.3; // 溢出时最多画到基本半径的 1.3 倍
+const CHARTS_FILE = 'charts-data.json';
+const HARD_CAP = 100;
+const OVERFLOW_MAX_RATIO = 1.3;
 
 const PALETTE = [
     '#ff5c8a', '#6c9eff', '#5cc48f', '#f5b942',
@@ -602,9 +618,9 @@ let state = {
     currentChartId: '',
     selectedCharIds: [],
     currentEditCharId: '',
-    collapsedDims: {},       // dimId -> true 表示折叠
-    collapsedScales: {},     // dimId -> true 表示刻度备注折叠
-    expandedNotes: {},       // key -> true 表示数值备注展开
+    collapsedDims: {},
+    collapsedScales: {},
+    expandedNotes: {},
     version: 3
 };
 
@@ -622,7 +638,7 @@ function createDefaultChart() {
         note: '',
         isPrivate: false,
         ownerId: null,
-        scaleNotes: {}   // { 0: "说明", 1: "说明", ... }
+        scaleNotes: {}
     }));
     const layers = [
         { id: genId('ly'), name: '基础状态', note: '默认主顺位' }
@@ -638,7 +654,6 @@ function createDefaultChart() {
     };
 }
 
-/* 兼容旧数据 */
 function normalizeChart(chart) {
     if (!chart) return chart;
     chart.maxValue = Number(chart.maxValue) || 10;
@@ -655,11 +670,13 @@ function normalizeChart(chart) {
         if (ax.isPrivate === undefined) ax.isPrivate = false;
         if (!ax.ownerId) ax.ownerId = null;
     });
+    if (!chart.id) chart.id = genId('chart');
+    if (!chart.name) chart.name = '未命名';
     return chart;
 }
 
 /* =====================================================
-   加载 / 保存
+   加载外部文件
 ===================================================== */
 async function loadCharactersFromFile() {
     try {
@@ -673,6 +690,18 @@ async function loadCharactersFromFile() {
         }));
     } catch (e) {
         console.warn('无法加载 ' + CHARACTERS_FILE + '：' + e.message);
+        return null;
+    }
+}
+
+async function loadChartsFromFile() {
+    try {
+        const res = await fetch(CHARTS_FILE + '?t=' + Date.now(), { cache: 'no-cache' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        return d;
+    } catch (e) {
+        // 文件不存在或解析失败都走这里
         return null;
     }
 }
@@ -705,37 +734,113 @@ function saveState() {
 }
 
 /* =====================================================
-   初始化
+   应用外部文件数据
 ===================================================== */
-async function init() {
-    const chars = await loadCharactersFromFile();
-    if (chars) state.characters = chars;
+function applyExternalData(ext) {
+    if (!ext || typeof ext !== 'object') return false;
 
-    const saved = loadStateFromStorage();
-    if (saved) {
-        if (Array.isArray(saved.charts) && saved.charts.length > 0) {
-            state.charts = saved.charts.map(normalizeChart);
-            state.currentChartId = saved.currentChartId || saved.charts[0].id;
-        }
-        if (saved.collapsedDims && typeof saved.collapsedDims === 'object') {
-            state.collapsedDims = saved.collapsedDims;
-        }
-        if (saved.collapsedScales && typeof saved.collapsedScales === 'object') {
-            state.collapsedScales = saved.collapsedScales;
-        }
-        if (saved.expandedNotes && typeof saved.expandedNotes === 'object') {
-            state.expandedNotes = saved.expandedNotes;
-        }
-        if (Array.isArray(saved.selectedCharIds)) {
-            state.selectedCharIds = saved.selectedCharIds.filter(id =>
-                state.characters.some(c => c.id === id)
-            );
-        }
-        if (saved.currentEditCharId) {
-            state.currentEditCharId = saved.currentEditCharId;
+    // 角色数据
+    if (Array.isArray(ext.characters) && ext.characters.length > 0) {
+        state.characters = ext.characters.map(c => ({
+            id: c.id,
+            name: c.name || '未命名',
+            avatarFile: c.avatarFile || ''
+        }));
+    }
+
+    // 图表数据
+    if (Array.isArray(ext.charts) && ext.charts.length > 0) {
+        state.charts = ext.charts.map(normalizeChart);
+        state.currentChartId = ext.currentChartId || ext.charts[0].id;
+        if (!state.charts.find(c => c.id === state.currentChartId)) {
+            state.currentChartId = state.charts[0].id;
         }
     }
 
+    // 折叠状态
+    if (ext.collapsedDims && typeof ext.collapsedDims === 'object') {
+        state.collapsedDims = ext.collapsedDims;
+    }
+    if (ext.collapsedScales && typeof ext.collapsedScales === 'object') {
+        state.collapsedScales = ext.collapsedScales;
+    }
+    if (ext.expandedNotes && typeof ext.expandedNotes === 'object') {
+        state.expandedNotes = ext.expandedNotes;
+    }
+
+    // 选中角色
+    if (Array.isArray(ext.selectedCharIds)) {
+        const charIds = new Set(state.characters.map(c => c.id));
+        state.selectedCharIds = ext.selectedCharIds.filter(id => charIds.has(id));
+    }
+    if (ext.currentEditCharId) {
+        state.currentEditCharId = ext.currentEditCharId;
+    }
+
+    return true;
+}
+
+function showLoadStatus(msg, isError) {
+    const el = document.getElementById('loadStatus');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    el.classList.toggle('error', !!isError);
+    // 5 秒后自动隐藏
+    clearTimeout(showLoadStatus._timer);
+    showLoadStatus._timer = setTimeout(() => {
+        el.classList.remove('show');
+    }, 5000);
+}
+
+/* =====================================================
+   初始化
+===================================================== */
+async function init() {
+    // 1. 优先尝试外部文件 charts-data.json
+    let loadedFromFile = false;
+    const fileData = await loadChartsFromFile();
+    if (fileData) {
+        const ok = applyExternalData(fileData);
+        if (ok) {
+            loadedFromFile = true;
+            console.log('已从 charts-data.json 加载');
+        }
+    }
+
+    // 2. 如果外部文件没读到图表数据，从 localStorage 恢复
+    if (!loadedFromFile) {
+        const saved = loadStateFromStorage();
+        if (saved) {
+            if (Array.isArray(saved.charts) && saved.charts.length > 0) {
+                state.charts = saved.charts.map(normalizeChart);
+                state.currentChartId = saved.currentChartId || saved.charts[0].id;
+            }
+            if (saved.collapsedDims && typeof saved.collapsedDims === 'object') {
+                state.collapsedDims = saved.collapsedDims;
+            }
+            if (saved.collapsedScales && typeof saved.collapsedScales === 'object') {
+                state.collapsedScales = saved.collapsedScales;
+            }
+            if (saved.expandedNotes && typeof saved.expandedNotes === 'object') {
+                state.expandedNotes = saved.expandedNotes;
+            }
+            if (Array.isArray(saved.selectedCharIds)) {
+                state.selectedCharIds = saved.selectedCharIds;
+            }
+            if (saved.currentEditCharId) {
+                state.currentEditCharId = saved.currentEditCharId;
+            }
+        }
+    }
+
+    // 3. 如果本地存储也没有角色，尝试外部角色文件
+    if (state.characters.length === 0) {
+        const chars = await loadCharactersFromFile();
+        if (chars) state.characters = chars;
+    }
+
+    // 4. 兜底
     if (!state.charts || state.charts.length === 0) {
         state.charts = [createDefaultChart()];
         state.currentChartId = state.charts[0].id;
@@ -744,11 +849,22 @@ async function init() {
         state.currentChartId = state.charts[0].id;
     }
 
+    // 5. 清理已不存在的角色引用
+    const charIds = new Set(state.characters.map(c => c.id));
+    state.selectedCharIds = state.selectedCharIds.filter(id => charIds.has(id));
     if (state.selectedCharIds.length === 0 && state.characters.length > 0) {
         state.selectedCharIds = [state.characters[0].id];
     }
-    if (!state.currentEditCharId && state.selectedCharIds.length > 0) {
-        state.currentEditCharId = state.selectedCharIds[0];
+    if (!state.currentEditCharId || !charIds.has(state.currentEditCharId)) {
+        state.currentEditCharId = state.selectedCharIds[0] || '';
+    }
+
+    // 6. 保存一次（如果外部文件加载进来了，写进 localStorage 作为缓存）
+    if (loadedFromFile) {
+        saveState();
+        showLoadStatus('✅ 已从同目录 charts-data.json 加载数据');
+    } else if (state.charts.length > 0) {
+        showLoadStatus('ℹ️ 未找到 charts-data.json，使用本地缓存或默认数据');
     }
 
     updateDataStatus();
@@ -778,7 +894,6 @@ function getVisibleAxes(chart, charId) {
     return pubs;
 }
 
-/* 值继承：第 i 层没值就往上找 */
 function getValueAt(chart, charId, axisId, layerId) {
     const layerIdx = chart.layers.findIndex(l => l.id === layerId);
     if (layerIdx === -1) return 0;
@@ -801,12 +916,6 @@ function ensureValue(chart, charId, axisId, layerId) {
     return chart.values[charId][axisId][layerId];
 }
 
-/* 计算半径比例：
- *   0 ~ maxValue      → 0 ~ 1
- *   超过 maxValue      → 1 ~ OVERFLOW_MAX_RATIO
- *   >= HARD_CAP        → 固定 OVERFLOW_MAX_RATIO
- *   不允许溢出         → 封顶为 1
- */
 function computeRadiusRatio(value, maxValue, allowOverflow) {
     if (!maxValue || maxValue <= 0) return 0;
     if (value <= 0) return 0;
@@ -914,9 +1023,6 @@ function onAllowOverflowChange(checked) {
     renderRadar();
 }
 
-/* =====================================================
-   角色选择
-===================================================== */
 function renderCharSelector() {
     const box = document.getElementById('charSelector');
     box.innerHTML = '';
@@ -955,9 +1061,6 @@ function toggleCharSelection(charId) {
     renderRadar();
 }
 
-/* =====================================================
-   图层
-===================================================== */
 function renderLayerList() {
     const box = document.getElementById('layerList');
     box.innerHTML = '';
@@ -1040,9 +1143,6 @@ function removeLayer(layerId) {
     renderRadar();
 }
 
-/* =====================================================
-   轴（维度）
-===================================================== */
 function renderAxesList() {
     const chart = getCurrentChart();
     if (!chart) return;
@@ -1147,7 +1247,6 @@ function removeAxis(axisId) {
     renderRadar();
 }
 
-/* 刻度备注 */
 function onScaleNoteInput(axisId, scaleValue, val) {
     const chart = getCurrentChart();
     const ax = chart.axes.find(a => a.id === axisId);
@@ -1161,9 +1260,6 @@ function onScaleNoteInput(axisId, scaleValue, val) {
     saveState();
 }
 
-/* =====================================================
-   数值编辑
-===================================================== */
 function renderValueEditor() {
     const box = document.getElementById('valueEditor');
     const title = document.getElementById('valueEditTitle');
@@ -1191,7 +1287,6 @@ function renderValueEditor() {
 
     title.textContent = `📝 数值编辑 - ${char.name}`;
 
-    // 头部
     const header = document.createElement('div');
     header.className = 'edit-header';
     const overflowLabel = chart.allowOverflow
@@ -1221,7 +1316,6 @@ function renderValueEditor() {
         const block = document.createElement('div');
         block.className = 'dim-block' + (isPrivate ? ' private' : '') + (isCollapsed ? ' collapsed' : '');
 
-        // 头部
         const head = document.createElement('div');
         head.className = 'dim-block-head';
         const notePreview = ax.note ? `（${escapeHtml(ax.note)}）` : '';
@@ -1237,11 +1331,10 @@ function renderValueEditor() {
         };
         block.appendChild(head);
 
-        // 内容
         const body = document.createElement('div');
         body.className = 'dim-block-body';
 
-        // 刻度备注块（可折叠）
+        // 刻度备注
         const scaleBlock = document.createElement('div');
         scaleBlock.className = 'scale-block' + (isScaleCollapsed ? ' collapsed' : '');
 
@@ -1285,7 +1378,6 @@ function renderValueEditor() {
             row.dataset.key = `${char.id}|${ax.id}|${layer.id}`;
 
             const orderClass = 'op' + Math.min(layerIdx, 3);
-
             const isOverflow = rawVal > max;
             const overflowAllowed = isOverflow && chart.allowOverflow;
             const overflowBlocked = isOverflow && !chart.allowOverflow;
@@ -1306,7 +1398,6 @@ function renderValueEditor() {
             `;
             body.appendChild(row);
 
-            // 数值备注框
             const noteKey = `${char.id}|${ax.id}|${layer.id}`;
             if (state.expandedNotes[noteKey]) {
                 const noteBox = document.createElement('div');
@@ -1334,7 +1425,6 @@ function onValueChange(charId, axisId, layerId, rawVal, fromRange) {
     const v = ensureValue(chart, charId, axisId, layerId);
     v.value = n;
 
-    // 更新同行其他元素
     const row = document.querySelector(`.value-row[data-key="${charId}|${axisId}|${layerId}"]`);
     if (row) {
         const range = row.querySelector('input[data-role="range"]');
@@ -1343,14 +1433,11 @@ function onValueChange(charId, axisId, layerId, rawVal, fromRange) {
         const max = chart.maxValue || 10;
 
         if (fromRange) {
-            // 滑块拖动 → 数字同步
             num.value = n;
         } else {
-            // 数字输入 → 滑块同步（滑块最多到 max）
             range.value = Math.min(n, max);
         }
 
-        // 溢出显示
         const isOverflow = n > max;
         const overflowAllowed = isOverflow && chart.allowOverflow;
         const overflowBlocked = isOverflow && !chart.allowOverflow;
@@ -1431,15 +1518,10 @@ function renderRadar() {
 
     const drawAll = (avatarImg) => {
         ctx.clearRect(0, 0, W, H);
-
         if (avatarImg) {
             drawAvatarBg(ctx, avatarImg, cx, cy, maxRadius * 1.05);
         }
-
-        // 环与轴
         drawRadarGrid(ctx, cx, cy, maxRadius, n, axesForDraw, maxValue, allowOverflow);
-
-        // 多边形
         drawRadarPolygons(ctx, cx, cy, maxRadius, n, axesForDraw, maxValue, allowOverflow, chart);
     };
 
@@ -1473,7 +1555,6 @@ function drawAvatarBg(ctx, img, cx, cy, radius) {
 }
 
 function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow) {
-    // 正常环（0 ~ maxValue）
     const rings = 5;
     for (let r = 1; r <= rings; r++) {
         const radius = (maxRadius * r) / rings;
@@ -1491,7 +1572,6 @@ function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow)
         ctx.stroke();
     }
 
-    // 如果允许溢出，画一条“爆表圈”，超出部分从这里开始
     if (allowOverflow && maxValue < HARD_CAP) {
         const overflowRadius = maxRadius * OVERFLOW_MAX_RATIO;
         ctx.beginPath();
@@ -1502,7 +1582,6 @@ function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow)
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // 标一个“爆表”小提示在爆表圈顶部
         ctx.font = 'bold 10px "Microsoft YaHei", sans-serif';
         ctx.fillStyle = '#8a6320';
         ctx.textAlign = 'center';
@@ -1510,7 +1589,6 @@ function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow)
         ctx.fillText('爆表上限 ' + HARD_CAP, cx, cy - overflowRadius - 4);
     }
 
-    // 轴线
     for (let i = 0; i < n; i++) {
         const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
         const x = cx + Math.cos(angle) * maxRadius;
@@ -1523,7 +1601,6 @@ function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow)
         ctx.stroke();
     }
 
-    // 轴标签
     ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -1560,7 +1637,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
                 };
             });
 
-            // 填充
             ctx.beginPath();
             points.forEach((p, i) => {
                 if (i === 0) ctx.moveTo(p.x, p.y);
@@ -1574,7 +1650,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
             ctx.fill();
             ctx.restore();
 
-            // 边框
             ctx.save();
             ctx.globalAlpha = borderAlpha;
             ctx.strokeStyle = baseColor;
@@ -1583,7 +1658,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
             ctx.stroke();
             ctx.restore();
 
-            // 顶点
             ctx.save();
             ctx.globalAlpha = borderAlpha;
             points.forEach(p => {
@@ -1612,7 +1686,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
             });
             ctx.restore();
 
-            // 顶点数值（只在第一层绘制，避免重叠）
             if (layerIdx === 0) {
                 ctx.save();
                 ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
@@ -1621,7 +1694,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
                 points.forEach(p => {
                     const isOverflowPoint = p.ratio > 1.0001;
                     const label = String(p.value);
-                    // 计算偏移：远离圆心方向
                     const dx = p.x - cx;
                     const dy = p.y - cy;
                     const len = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -1630,7 +1702,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
                     const tx = p.x + offX;
                     const ty = p.y + offY;
 
-                    // 白底描边
                     ctx.lineWidth = 3;
                     ctx.strokeStyle = '#fff';
                     ctx.strokeText(label, tx, ty);
@@ -1641,7 +1712,6 @@ function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverf
             }
         });
 
-        // 角色名（在第一个轴附近）
         const firstAxis = axes[0];
         if (firstAxis) {
             const v = getValueAt(chart, charId, firstAxis.id, chart.layers[0].id);
@@ -1666,6 +1736,8 @@ function exportData() {
         characters: state.characters,
         charts: state.charts,
         currentChartId: state.currentChartId,
+        selectedCharIds: state.selectedCharIds,
+        currentEditCharId: state.currentEditCharId,
         collapsedDims: state.collapsedDims,
         collapsedScales: state.collapsedScales,
         expandedNotes: state.expandedNotes,
@@ -1675,7 +1747,7 @@ function exportData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'charts-data.json';
+    a.download = CHARTS_FILE;
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -1689,26 +1761,7 @@ function importData(event) {
             const parsed = JSON.parse(e.target.result);
             if (!parsed || typeof parsed !== 'object') throw new Error('格式错误');
 
-            if (Array.isArray(parsed.charts) && parsed.charts.length > 0) {
-                state.charts = parsed.charts.map(normalizeChart);
-                state.currentChartId = parsed.currentChartId || parsed.charts[0].id;
-            }
-            if (parsed.collapsedDims && typeof parsed.collapsedDims === 'object') {
-                state.collapsedDims = parsed.collapsedDims;
-            }
-            if (parsed.collapsedScales && typeof parsed.collapsedScales === 'object') {
-                state.collapsedScales = parsed.collapsedScales;
-            }
-            if (parsed.expandedNotes && typeof parsed.expandedNotes === 'object') {
-                state.expandedNotes = parsed.expandedNotes;
-            }
-            if (Array.isArray(parsed.characters) && parsed.characters.length > 0) {
-                state.characters = parsed.characters.map(c => ({
-                    id: c.id,
-                    name: c.name || '未命名',
-                    avatarFile: c.avatarFile || ''
-                }));
-            }
+            applyExternalData(parsed);
 
             const charIds = new Set(state.characters.map(c => c.id));
             state.selectedCharIds = state.selectedCharIds.filter(id => charIds.has(id));
@@ -1752,6 +1805,34 @@ async function reloadCharactersFromFile() {
     updateDataStatus();
     renderAll();
     alert(`已重新读取 ${chars.length} 个角色。`);
+}
+
+async function reloadChartsFromFile() {
+    const fileData = await loadChartsFromFile();
+    if (!fileData) {
+        alert('无法读取 charts-data.json，请检查文件是否存在且为有效 JSON。');
+        return;
+    }
+    const ok = applyExternalData(fileData);
+    if (!ok) {
+        alert('charts-data.json 内容为空或格式不正确。');
+        return;
+    }
+
+    const charIds = new Set(state.characters.map(c => c.id));
+    state.selectedCharIds = state.selectedCharIds.filter(id => charIds.has(id));
+    if (state.selectedCharIds.length === 0 && state.characters.length > 0) {
+        state.selectedCharIds = [state.characters[0].id];
+    }
+    if (!state.currentEditCharId || !charIds.has(state.currentEditCharId)) {
+        state.currentEditCharId = state.selectedCharIds[0] || '';
+    }
+
+    saveState();
+    updateDataStatus();
+    renderAll();
+    showLoadStatus('✅ 已从 charts-data.json 重新加载数据');
+    alert('已重新读取 charts-data.json。');
 }
 
 function resetAll() {

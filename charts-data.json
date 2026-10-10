@@ -206,7 +206,8 @@
       ],
       "values": {
         "c1791279607121_88jg3t": {}
-      }
+      },
+      "allowOverflow": false
     },
     {
       "id": "chartmv2mvdojvg4y",
@@ -218,42 +219,48 @@
           "name": "攻击",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         },
         {
           "id": "axmv2mvdojbl1l",
           "name": "防御",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         },
         {
           "id": "axmv2mvdojf80z",
           "name": "耐力",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         },
         {
           "id": "axmv2mvdojekjn",
           "name": "脑力",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         },
         {
           "id": "axmv2mvdojq9gu",
           "name": "特殊",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         },
         {
           "id": "axmv2mvdoj574d",
           "name": "速度",
           "note": "",
           "isPrivate": false,
-          "ownerId": null
+          "ownerId": null,
+          "scaleNotes": {}
         }
       ],
       "layers": [
@@ -312,7 +319,7 @@
           },
           "axmv2mvdojq9gu": {
             "lymv2mvdojrguk": {
-              "value": 100,
+              "value": 10,
               "note": ""
             },
             "lymv2my2m3takk": {
@@ -393,15 +400,28 @@
             }
           }
         }
-      }
+      },
+      "allowOverflow": false
     }
   ],
   "currentChartId": "chartmv2mvdojvg4y",
+  "selectedCharIds": [
+    "c1791279607121_88jg3t"
+  ],
+  "currentEditCharId": "c1791279607121_88jg3t",
   "collapsedDims": {
     "axmv2mvdojke7b": false
+  },
+  "collapsedScales": {
+    "axmv2mvdojke7b": true,
+    "axmv2mvdojbl1l": true,
+    "axmv2mvdojf80z": true,
+    "axmv2mvdojekjn": true,
+    "axmv2mvdojq9gu": true,
+    "axmv2mvdoj574d": true
   },
   "expandedNotes": {
     "c1791279607121_88jg3t|axmv2mvdojekjn|lymv2my2m3takk": false
   },
-  "version": 2
+  "version": 3
 }

@@ -1,0 +1,407 @@
+{
+  "characters": [
+    {
+      "id": "c1791279607121_88jg3t",
+      "name": "爱城恋太郎",
+      "avatarFile": "恋太郎.jpg"
+    },
+    {
+      "id": "c1791279712264_fw44kq",
+      "name": "花园羽香里",
+      "avatarFile": "羽香里.jpg"
+    },
+    {
+      "id": "c1791279761968_at4t0h",
+      "name": "院田唐音",
+      "avatarFile": "唐音.jpg"
+    },
+    {
+      "id": "c1791279783512_39b1wk",
+      "name": "好本静",
+      "avatarFile": "好本静.jpg"
+    },
+    {
+      "id": "c1791279816384_8f2z3l",
+      "name": "荣逢凪乃",
+      "avatarFile": "凪乃.jpg"
+    },
+    {
+      "id": "c1791279845152_znpl77",
+      "name": "药膳楠莉",
+      "avatarFile": "楠莉.jpg"
+    },
+    {
+      "id": "c1791279874680_ejexm6",
+      "name": "花园羽羽里",
+      "avatarFile": "羽羽里.jpg"
+    },
+    {
+      "id": "c1791279913368_jcj9cy",
+      "name": "原贺胡桃",
+      "avatarFile": "胡桃.jpg"
+    },
+    {
+      "id": "c1791279929232_8uwf3w",
+      "name": "铭户芽衣",
+      "avatarFile": "芽衣.jpg"
+    },
+    {
+      "id": "c1791279993800_00vnff",
+      "name": "须藤育",
+      "avatarFile": "育.jpg"
+    },
+    {
+      "id": "c1791280007528_5xfj71",
+      "name": "美杉美美美",
+      "avatarFile": "美美美.jpg"
+    },
+    {
+      "id": "c1791280067544_32r2je",
+      "name": "华暮爱爱",
+      "avatarFile": "爱爱.jpg"
+    },
+    {
+      "id": "c1791280092456_8t647t",
+      "name": "伊院知与",
+      "avatarFile": "知与.jpg"
+    },
+    {
+      "id": "c1791283762180_ulb67f",
+      "name": "娜迪（大和抚子）",
+      "avatarFile": "娜迪.jpg"
+    },
+    {
+      "id": "c1791283799084_vdekiy",
+      "name": "优敷山女",
+      "avatarFile": "山女.jpg"
+    },
+    {
+      "id": "c1791283859820_wci8kf",
+      "name": "茂见红叶",
+      "avatarFile": "红叶.jpg"
+    },
+    {
+      "id": "c1791283908371_98zl16",
+      "name": "药膳屋久",
+      "avatarFile": "屋久.jpg"
+    },
+    {
+      "id": "c1791283945059_v0tol9",
+      "name": "土吕瀞骑士华",
+      "avatarFile": "骑士华.jpg"
+    },
+    {
+      "id": "c1791283983107_ducd8p",
+      "name": "毛樽井亚爱子（亚希）",
+      "avatarFile": "亚爱子.jpg"
+    },
+    {
+      "id": "c1791284048083_edji9w",
+      "name": "中二诗人",
+      "avatarFile": "诗人.jpg"
+    },
+    {
+      "id": "c1791284086019_03g8uj",
+      "name": "女井户妹",
+      "avatarFile": "妹.jpg"
+    },
+    {
+      "id": "c1791284107419_zbia4e",
+      "name": "盆能寺百八",
+      "avatarFile": "百八.jpg"
+    },
+    {
+      "id": "c1791284130003_05jbhl",
+      "name": "灰尾凛",
+      "avatarFile": "凛.jpg"
+    },
+    {
+      "id": "c1791284177795_udt1h3",
+      "name": "一二三数",
+      "avatarFile": "数.jpg"
+    },
+    {
+      "id": "c1791288162302_mthozo",
+      "name": "火保耶拉",
+      "avatarFile": "耶拉.jpg"
+    },
+    {
+      "id": "c1791284943082_9wsmgm",
+      "name": "猫成珠",
+      "avatarFile": "珠珠.jpg"
+    },
+    {
+      "id": "c1791285554162_a9itpj",
+      "name": "才奇姬歌（奇姬）",
+      "avatarFile": "奇姬.jpg"
+    },
+    {
+      "id": "c1791285767177_pggqda",
+      "name": "出井祭李",
+      "avatarFile": "祭李.jpg"
+    },
+    {
+      "id": "c1791285788097_4tfb2p",
+      "name": "宇佐美椎奈",
+      "avatarFile": "宇佐美.jpg"
+    },
+    {
+      "id": "c1791285806017_5bd8gt",
+      "name": "雪房田梦留",
+      "avatarFile": "梦留.jpg"
+    },
+    {
+      "id": "c1791286411656_1o8w9v",
+      "name": "辈先",
+      "avatarFile": "辈先.jpg"
+    },
+    {
+      "id": "c1791286817880_vlmegf",
+      "name": "根向井宁梦",
+      "avatarFile": "宁梦.jpg"
+    },
+    {
+      "id": "c1791287068816_i9leia",
+      "name": "端须莲叶",
+      "avatarFile": "莲叶.jpg"
+    },
+    {
+      "id": "c1791287098576_xwmmxu",
+      "name": "守北季鞠",
+      "avatarFile": "季鞠.jpg"
+    },
+    {
+      "id": "c1791288344382_7qrayo",
+      "name": "双天彗流",
+      "avatarFile": "彗流.jpg"
+    },
+    {
+      "id": "c1791287275272_5axoyo",
+      "name": "千优慈相",
+      "avatarFile": "慈相.jpg"
+    },
+    {
+      "id": "c1791288015350_q0356u",
+      "name": "三白小小枝",
+      "avatarFile": "小小枝.jpg"
+    },
+    {
+      "id": "c1791288032718_xd9s0q",
+      "name": "伏田兰那",
+      "avatarFile": "兰那.jpg"
+    }
+  ],
+  "charts": [
+    {
+      "id": "chartmv2mv74rea5i",
+      "name": "基础六维",
+      "maxValue": 10,
+      "axes": [],
+      "layers": [
+        {
+          "id": "lymv2mv74r68i6",
+          "name": "基础状态",
+          "note": "默认主顺位"
+        }
+      ],
+      "values": {
+        "c1791279607121_88jg3t": {}
+      }
+    },
+    {
+      "id": "chartmv2mvdojvg4y",
+      "name": "战力",
+      "maxValue": 10,
+      "axes": [
+        {
+          "id": "axmv2mvdojke7b",
+          "name": "攻击",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        },
+        {
+          "id": "axmv2mvdojbl1l",
+          "name": "防御",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        },
+        {
+          "id": "axmv2mvdojf80z",
+          "name": "耐力",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        },
+        {
+          "id": "axmv2mvdojekjn",
+          "name": "脑力",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        },
+        {
+          "id": "axmv2mvdojq9gu",
+          "name": "特殊",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        },
+        {
+          "id": "axmv2mvdoj574d",
+          "name": "速度",
+          "note": "",
+          "isPrivate": false,
+          "ownerId": null
+        }
+      ],
+      "layers": [
+        {
+          "id": "lymv2mvdojrguk",
+          "name": "基础状态",
+          "note": ""
+        },
+        {
+          "id": "lymv2my2m3takk",
+          "name": "精神",
+          "note": ""
+        }
+      ],
+      "values": {
+        "c1791279607121_88jg3t": {
+          "axmv2mvdojke7b": {
+            "lymv2mvdojrguk": {
+              "value": 7,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 4,
+              "note": ""
+            }
+          },
+          "axmv2mvdojbl1l": {
+            "lymv2mvdojrguk": {
+              "value": 8,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 10,
+              "note": ""
+            }
+          },
+          "axmv2mvdojf80z": {
+            "lymv2mvdojrguk": {
+              "value": 8,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 9,
+              "note": ""
+            }
+          },
+          "axmv2mvdojekjn": {
+            "lymv2mvdojrguk": {
+              "value": 6,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 6,
+              "note": ""
+            }
+          },
+          "axmv2mvdojq9gu": {
+            "lymv2mvdojrguk": {
+              "value": 100,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 10,
+              "note": ""
+            }
+          },
+          "axmv2mvdoj574d": {
+            "lymv2mvdojrguk": {
+              "value": 7,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 8,
+              "note": ""
+            }
+          }
+        },
+        "c1791279712264_fw44kq": {
+          "axmv2mvdojke7b": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          },
+          "axmv2mvdojbl1l": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          },
+          "axmv2mvdojf80z": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          },
+          "axmv2mvdojekjn": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          },
+          "axmv2mvdojq9gu": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          },
+          "axmv2mvdoj574d": {
+            "lymv2mvdojrguk": {
+              "value": 0,
+              "note": ""
+            },
+            "lymv2my2m3takk": {
+              "value": 0,
+              "note": ""
+            }
+          }
+        }
+      }
+    }
+  ],
+  "currentChartId": "chartmv2mvdojvg4y",
+  "collapsedDims": {
+    "axmv2mvdojke7b": false
+  },
+  "expandedNotes": {
+    "c1791279607121_88jg3t|axmv2mvdojekjn|lymv2my2m3takk": false
+  },
+  "version": 2
+}

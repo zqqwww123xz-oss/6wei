@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>六维图 · 超百女友数据站</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .btn { padding: 10px 18px; border: none; border-radius: 10px; background: var(--pink-main); color: var(--white); font-size: 15px; cursor: pointer; transition: background 0.2s; }
+        .btn:hover { background: var(--pink-deep); }
+        .btn.small { padding: 6px 12px; font-size: 13px; }
+        .btn.tiny { padding: 3px 10px; font-size: 12px; border-radius: 6px; }
+        .btn.ghost { background: var(--white); color: var(--pink-deep); border: 2px solid var(--pink-main); }
+        .btn.ghost:hover { background: var(--pink-light); }
+        .btn.danger { background: #ff8fab; }
+        .btn.danger:hover { background: #c94a4a; }
+
+        /* 顶部工具栏 */
+        .chart-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            background: var(--pink-light);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .chart-bar label {
+            font-weight: bold;
+            color: var(--pink-deep);
+            font-size: 14px;
+        }
+        .chart-bar select {
+            padding: 8px 12px;
+            border: 2px solid var(--pink-main);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: var(--white);
+            color: var(--text);
+            font-family: inherit;
+            min-width: 160px;
+        }
+        .chart-bar select:focus { border-color: var(--pink-deep); }
+        .chart-bar input[type="number"] {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid var(--pink-main);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            text-align: center;
+        }
+        .chart-bar input[type="number"]:focus { border-color: var(--pink-deep); }
+
+        .chart-bar .check-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+            color: var(--pink-deep);
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .chart-bar .check-box input { accent-color: var(--pink-deep); }
+
+        /* 主布局 */
+        .chart-layout { display: flex; flex-wrap: wrap; gap: 20px; }
+        .chart-canvas-wrap {
+            flex: 0 0 auto;
+            width: 520px;
+            max-width: 100%;
+            background: var(--pink-light);
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .chart-canvas-wrap canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: var(--white);
+            border-radius: 12px;
+        }
+        .chart-side { flex: 1; min-width: 300px; }
+
+        /* 面板 */
+        .sec-panel {
+            background: var(--white);
+            border: 2px solid var(--pink-light);
+            border-radius: 12px;
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+        .sec-head {
+            padding: 10px 14px;
+            background: var(--pink-light);
+            color: var(--pink-deep);
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sec-body { padding: 12px; }
+
+        /* 角色选择 */
+        .char-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 2px;
+        }
+        .char-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px 4px 4px;
+            background: var(--white);
+            color: var(--pink-deep);
+            border: 2px solid var(--pink-main);
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+        }
+        .char-chip:hover { background: #ffd6e3; }
+        .char-chip.active {
+            background: var(--pink-deep);
+            color: var(--white);
+            border-color: var(--pink-deep);
+            font-weight: bold;
+        }
+        .char-chip .mini-avatar {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--pink-deep);
+            flex-shrink: 0;
+        }
+        .char-chip .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* 图层 / 维度 列表项 */
+        .item-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            background: var(--pink-light);
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .item-line .idx-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: var(--pink-deep);
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .item-line .idx-badge.private {
+            background: #f5b942;
+            color: #8a6320;
+        }
+        .item-line input[type="text"] {
+            flex: 1;
+            padding: 5px 8px;
+            border: 2px solid var(--pink-main);
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            font-family: inherit;
+            background: var(--white);
+            color: var(--text);
+            min-width: 0;
+        }
+        .item-line input[type="text"]:focus { border-color: var(--pink-deep); }
+        .item-line .line-btn {
+            cursor: pointer;
+            font-size: 13px;
+            color: #a07a86;
+            padding: 3px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .item-line .line-btn:hover { background: #fff; color: var(--pink-deep); }
+        .item-line .line-btn.danger:hover { color: #c94a4a; }
+
+        .add-row { display: flex; gap: 6px; margin-top: 6px; }
+        .add-row .btn { flex: 1; }
+
+        /* 数值编辑 */
+        .edit-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--pink-light);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .edit-header .eh-title {
+            font-weight: bold;
+            color: var(--pink-deep);
+            font-size: 14px;
+        }
+        .edit-header .eh-max {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--pink-deep);
+        }
+        .edit-header .eh-max input {
+            width: 70px;
+            padding: 3px 8px;
+            border: 2px solid var(--pink-main);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            text-align: center;
+        }
+        .edit-header .eh-max input:focus { border-color: var(--pink-deep); }
+
+        /* 每个维度块 */
+        .dim-block {
+            background: var(--pink-light);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border: 2px solid transparent;
+        }
+        .dim-block.private { border-color: #f5b942; background: #fff9e8; }
+        .dim-block-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            user-select: none;
+            background: #ffe4ec;
+        }
+        .dim-block.private .dim-block-head { background: #fdf0c8; }
+        .dim-block-head .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            font-size: 10px;
+            color: var(--pink-deep);
+        }
+        .dim-block.collapsed .dim-block-head .arrow { transform: rotate(-90deg); }
+        .dim-block-head .dim-title {
+            flex: 1;
+            font-weight: bold;
+            color: var(--pink-deep);
+            font-size: 13px;
+        }
+        .dim-block.private .dim-block-head .dim-title { color: #8a6320; }
+        .dim-block-head .dim-note-preview {
+            font-size: 11px;
+            color: #a07a86;
+            font-weight: normal;
+        }
+        .dim-block-body { padding: 10px 12px; background: var(--white); }
+        .dim-block.collapsed .dim-block-body { display: none; }
+
+        /* 刻度备注块 */
+        .scale-block {
+            background: #fff8fb;
+            border: 1px dashed #ffb8ca;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .scale-block-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            user-select: none;
+            background: #fff0f6;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--pink-deep);
+        }
+        .scale-block-head .arrow {
+            display: inline-block;
+            transition: transform 0.2s;
+            font-size: 9px;
+        }
+        .scale-block.collapsed .scale-block-head .arrow { transform: rotate(-90deg); }
+        .scale-block.collapsed .scale-block-body { display: none; }
+        .scale-block-body {
+            padding: 6px 10px 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .scale-note-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .scale-note-row .scale-num {
+            flex: 0 0 34px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--pink-deep);
+            text-align: right;
+        }
+        .scale-note-row .scale-num.overflow-cap {
+            color: #c94a4a;
+        }
+        .scale-note-row input[type="text"] {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid var(--pink-main);
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            font-family: inherit;
+            background: #fff;
+            min-width: 0;
+        }
+        .scale-note-row input[type="text"]:focus { border-color: var(--pink-deep); }
+
+        /* 数值行 */
+        .value-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            flex-wrap: wrap;
+        }
+        .value-row .layer-tag {
+            flex: 0 0 130px;
+            font-size: 12px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .value-row .layer-tag .layer-order {
+            display: inline-block;
+            background: var(--pink-main);
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .value-row .layer-tag .layer-order.op0 { background: var(--pink-deep); }
+        .value-row .layer-tag .layer-order.op1 { background: #ffb8ca; }
+        .value-row .layer-tag .layer-order.op2 { background: #d9b8c3; }
+        .value-row .layer-tag .layer-order.op3 { background: #c4c4c4; }
+        .value-row input[type="range"] {
+            flex: 1;
+            min-width: 100px;
+            accent-color: var(--pink-deep);
+        }
+        .value-row input[type="number"] {
+            width: 70px;
+            padding: 4px 6px;
+            border: 2px solid var(--pink-main);
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            text-align: center;
+            font-family: inherit;
+        }
+        .value-row input[type="number"]:focus { border-color: var(--pink-deep); }
+        .value-row input[type="number"].overflow {
+            border-color: #f5b942;
+            background: #fff9e8;
+            color: #8a6320;
+            font-weight: bold;
+        }
+        .value-row input[type="number"].overflow.blocked {
+            border-color: #c4c4c4;
+            background: #f5f5f5;
+            color: #888;
+            font-weight: normal;
+        }
+        .value-row .overflow-tag {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 5px;
+            border-radius: 6px;
+            background: #f5b942;
+            color: #fff;
+            display: none;
+        }
+        .value-row .overflow-tag.show { display: inline-block; }
+        .value-row .overflow-tag.blocked {
+            background: #c4c4c4;
+        }
+        .value-row .note-toggle {
+            cursor: pointer;
+            font-size: 14px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            user-select: none;
+            opacity: 0.5;
+            transition: opacity 0.15s;
+        }
+        .value-row .note-toggle:hover { opacity: 1; background: #ffe4ec; }
+        .value-row .note-toggle.has-note {
+            opacity: 1;
+            color: var(--pink-deep);
+        }
+
+        /* 数值备注 */
+        .value-note-box {
+            padding: 6px 8px 8px 138px;
+        }
+        .value-note-box textarea {
+            width: 100%;
+            padding: 5px 8px;
+            border: 2px solid var(--pink-main);
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 40px;
+            background: #fff8fb;
+        }
+        .value-note-box textarea:focus { border-color: var(--pink-deep); }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            color: #a07a86;
+            padding: 24px 12px;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #a07a86;
+            line-height: 1.6;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 900px) {
+            .chart-canvas-wrap { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>📊 六维图</h1>
+
+    <!-- 图表工具栏 -->
+    <div class="chart-bar">
+        <label>当前图表：</label>
+        <select id="chartSelect" onchange="switchChart(this.value)"></select>
+        <button class="btn small" onclick="renameChart()">✎ 重命名</button>
+        <button class="btn small ghost" onclick="addChart()">＋ 新建图表</button>
+        <button class="btn small danger" onclick="deleteChart()">🗑 删除图表</button>
+        <span style="width:1px;height:24px;background:var(--pink-main);"></span>
+        <label>最大值：</label>
+        <input type="number" id="maxValueInput" min="1" max="200" value="10" oninput="onMaxValueInput(this.value)">
+        <label class="check-box" title="允许数值超过最大值，图中会显示出圈（封顶100）">
+            <input type="checkbox" id="allowOverflow" onchange="onAllowOverflowChange(this.checked)">
+            允许溢出（爆表）
+        </label>
+        <span style="margin-left:auto;font-size:12px;color:#a07a86;">
+            单选角色时头像会作为雷达图背景
+        </span>
+    </div>
+
+    <!-- 主布局 -->
+    <div class="chart-layout">
+        <div class="chart-canvas-wrap">
+            <canvas id="radarCanvas" width="520" height="520"></canvas>
+        </div>
+
+        <div class="chart-side">
+            <!-- 角色选择 -->
+            <div class="sec-panel">
+                <div class="sec-head">
+                    <span>🎭 角色选择</span>
+                </div>
+                <div class="sec-body">
+                    <div class="char-selector" id="charSelector"></div>
+                    <div class="hint">点击切换选中，可多选叠加对比。</div>
+                </div>
+            </div>
+
+            <!-- 图层设置 -->
+            <div class="sec-panel">
+                <div class="sec-head">
+                    <span>📚 图层顺位</span>
+                    <span style="font-size:11px;font-weight:normal;color:#a07a86;">后面的透明度递减</span>
+                </div>
+                <div class="sec-body">
+                    <div id="layerList"></div>
+                    <div class="add-row">
+                        <button class="btn small" onclick="addLayer()">＋ 添加数据项（图层）</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 维度设置 -->
+            <div class="sec-panel">
+                <div class="sec-head">
+                    <span>⚙️ 维度设置</span>
+                </div>
+                <div class="sec-body">
+                    <div style="font-size:12px;font-weight:bold;color:var(--pink-deep);margin-bottom:6px;">
+                        🔷 公共维度（所有角色共享）
+                    </div>
+                    <div id="publicAxesList"></div>
+                    <div class="add-row">
+                        <button class="btn small" onclick="addAxis(false)">＋ 添加公共维度</button>
+                    </div>
+
+                    <div style="font-size:12px;font-weight:bold;color:#8a6320;margin:14px 0 6px;">
+                        🔶 独立维度（仅当前编辑角色专属）
+                    </div>
+                    <div id="privateAxesList"></div>
+                    <div class="add-row">
+                        <button class="btn small" onclick="addAxis(true)">＋ 添加独立维度</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数值编辑 -->
+    <div class="sec-panel" style="margin-top:20px;">
+        <div class="sec-head">
+            <span id="valueEditTitle">📝 数值编辑</span>
+        </div>
+        <div class="sec-body">
+            <div id="valueEditor"></div>
+        </div>
+    </div>
+
+    <!-- 数据 -->
+    <div class="sec-panel" style="margin-top:20px;">
+        <div class="sec-head">
+            <span>💾 数据</span>
+        </div>
+        <div class="sec-body">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn" onclick="exportData()">导出 JSON</button>
+                <button class="btn ghost" onclick="document.getElementById('importFile').click()">导入 JSON</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+                <button class="btn ghost" onclick="reloadCharactersFromFile()">🔄 重新读取角色文件</button>
+                <button class="btn danger" onclick="resetAll()">重置所有图表</button>
+            </div>
+            <div class="hint" id="dataStatus"></div>
+        </div>
+    </div>
+</main>
+
+<footer>粉丝向非官方数据站 · 仅用于学习交流</footer>
+
+<script>
+/* =====================================================
+   配置
+===================================================== */
+const FOLDER_AVATAR = 'image/picture/';
+const STORAGE_KEY = 'hyakunin_charts_v3';
+const CHARACTERS_FILE = 'characters-data.json';
+const HARD_CAP = 100;         // 图中表现的最大值，超过视为封顶
+const OVERFLOW_MAX_RATIO = 1.3; // 溢出时最多画到基本半径的 1.3 倍
+
+const PALETTE = [
+    '#ff5c8a', '#6c9eff', '#5cc48f', '#f5b942',
+    '#b28dff', '#ff7f50', '#4dc9d9', '#d97dbf',
+    '#8db547', '#8a6320', '#7f8fff', '#c4a35a'
+];
+
+/* =====================================================
+   状态
+===================================================== */
+let state = {
+    characters: [],
+    charts: [],
+    currentChartId: '',
+    selectedCharIds: [],
+    currentEditCharId: '',
+    collapsedDims: {},       // dimId -> true 表示折叠
+    collapsedScales: {},     // dimId -> true 表示刻度备注折叠
+    expandedNotes: {},       // key -> true 表示数值备注展开
+    version: 3
+};
+
+function genId(prefix) {
+    return (prefix || 'x') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+/* =====================================================
+   默认图表
+===================================================== */
+function createDefaultChart() {
+    const axes = ['力量', '敏捷', '智力', '耐力', '精神', '魅力'].map(n => ({
+        id: genId('ax'),
+        name: n,
+        note: '',
+        isPrivate: false,
+        ownerId: null,
+        scaleNotes: {}   // { 0: "说明", 1: "说明", ... }
+    }));
+    const layers = [
+        { id: genId('ly'), name: '基础状态', note: '默认主顺位' }
+    ];
+    return {
+        id: genId('chart'),
+        name: '基础六维',
+        maxValue: 10,
+        allowOverflow: false,
+        axes,
+        layers,
+        values: {}
+    };
+}
+
+/* 兼容旧数据 */
+function normalizeChart(chart) {
+    if (!chart) return chart;
+    chart.maxValue = Number(chart.maxValue) || 10;
+    if (chart.maxValue < 1) chart.maxValue = 1;
+    if (chart.maxValue > 200) chart.maxValue = 200;
+    if (chart.allowOverflow === undefined) chart.allowOverflow = false;
+    if (!chart.axes) chart.axes = [];
+    if (!chart.layers || chart.layers.length === 0) {
+        chart.layers = [{ id: genId('ly'), name: '基础状态', note: '' }];
+    }
+    if (!chart.values) chart.values = {};
+    chart.axes.forEach(ax => {
+        if (!ax.scaleNotes) ax.scaleNotes = {};
+        if (ax.isPrivate === undefined) ax.isPrivate = false;
+        if (!ax.ownerId) ax.ownerId = null;
+    });
+    return chart;
+}
+
+/* =====================================================
+   加载 / 保存
+===================================================== */
+async function loadCharactersFromFile() {
+    try {
+        const res = await fetch(CHARACTERS_FILE + '?t=' + Date.now(), { cache: 'no-cache' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const d = await res.json();
+        return (d.characters || []).map(c => ({
+            id: c.id,
+            name: c.name || '未命名',
+            avatarFile: c.avatarFile || ''
+        }));
+    } catch (e) {
+        console.warn('无法加载 ' + CHARACTERS_FILE + '：' + e.message);
+        return null;
+    }
+}
+
+function loadStateFromStorage() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveState() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            charts: state.charts,
+            currentChartId: state.currentChartId,
+            selectedCharIds: state.selectedCharIds,
+            currentEditCharId: state.currentEditCharId,
+            collapsedDims: state.collapsedDims,
+            collapsedScales: state.collapsedScales,
+            expandedNotes: state.expandedNotes,
+            version: state.version
+        }));
+    } catch (e) {
+        console.warn('保存失败：' + e.message);
+    }
+}
+
+/* =====================================================
+   初始化
+===================================================== */
+async function init() {
+    const chars = await loadCharactersFromFile();
+    if (chars) state.characters = chars;
+
+    const saved = loadStateFromStorage();
+    if (saved) {
+        if (Array.isArray(saved.charts) && saved.charts.length > 0) {
+            state.charts = saved.charts.map(normalizeChart);
+            state.currentChartId = saved.currentChartId || saved.charts[0].id;
+        }
+        if (saved.collapsedDims && typeof saved.collapsedDims === 'object') {
+            state.collapsedDims = saved.collapsedDims;
+        }
+        if (saved.collapsedScales && typeof saved.collapsedScales === 'object') {
+            state.collapsedScales = saved.collapsedScales;
+        }
+        if (saved.expandedNotes && typeof saved.expandedNotes === 'object') {
+            state.expandedNotes = saved.expandedNotes;
+        }
+        if (Array.isArray(saved.selectedCharIds)) {
+            state.selectedCharIds = saved.selectedCharIds.filter(id =>
+                state.characters.some(c => c.id === id)
+            );
+        }
+        if (saved.currentEditCharId) {
+            state.currentEditCharId = saved.currentEditCharId;
+        }
+    }
+
+    if (!state.charts || state.charts.length === 0) {
+        state.charts = [createDefaultChart()];
+        state.currentChartId = state.charts[0].id;
+    }
+    if (!state.currentChartId || !state.charts.find(c => c.id === state.currentChartId)) {
+        state.currentChartId = state.charts[0].id;
+    }
+
+    if (state.selectedCharIds.length === 0 && state.characters.length > 0) {
+        state.selectedCharIds = [state.characters[0].id];
+    }
+    if (!state.currentEditCharId && state.selectedCharIds.length > 0) {
+        state.currentEditCharId = state.selectedCharIds[0];
+    }
+
+    updateDataStatus();
+    renderAll();
+}
+
+function updateDataStatus() {
+    const el = document.getElementById('dataStatus');
+    if (!el) return;
+    el.textContent = `已加载 ${state.characters.length} 个角色 · 共 ${state.charts.length} 个图表`;
+}
+
+/* =====================================================
+   当前图表
+===================================================== */
+function getCurrentChart() {
+    return state.charts.find(c => c.id === state.currentChartId);
+}
+
+function getVisibleAxes(chart, charId) {
+    if (!chart) return [];
+    const pubs = chart.axes.filter(a => !a.isPrivate);
+    if (charId) {
+        const privs = chart.axes.filter(a => a.isPrivate && a.ownerId === charId);
+        return pubs.concat(privs);
+    }
+    return pubs;
+}
+
+/* 值继承：第 i 层没值就往上找 */
+function getValueAt(chart, charId, axisId, layerId) {
+    const layerIdx = chart.layers.findIndex(l => l.id === layerId);
+    if (layerIdx === -1) return 0;
+    for (let i = layerIdx; i >= 0; i--) {
+        const layer = chart.layers[i];
+        const cell = chart.values?.[charId]?.[axisId]?.[layer.id];
+        if (cell && cell.value !== undefined && cell.value !== null && cell.value !== '') {
+            return Number(cell.value) || 0;
+        }
+    }
+    return 0;
+}
+
+function ensureValue(chart, charId, axisId, layerId) {
+    if (!chart.values[charId]) chart.values[charId] = {};
+    if (!chart.values[charId][axisId]) chart.values[charId][axisId] = {};
+    if (!chart.values[charId][axisId][layerId]) {
+        chart.values[charId][axisId][layerId] = { value: 0, note: '' };
+    }
+    return chart.values[charId][axisId][layerId];
+}
+
+/* 计算半径比例：
+ *   0 ~ maxValue      → 0 ~ 1
+ *   超过 maxValue      → 1 ~ OVERFLOW_MAX_RATIO
+ *   >= HARD_CAP        → 固定 OVERFLOW_MAX_RATIO
+ *   不允许溢出         → 封顶为 1
+ */
+function computeRadiusRatio(value, maxValue, allowOverflow) {
+    if (!maxValue || maxValue <= 0) return 0;
+    if (value <= 0) return 0;
+    if (value <= maxValue) return value / maxValue;
+    if (!allowOverflow) return 1;
+    if (maxValue >= HARD_CAP) return 1;
+    const overflow = value - maxValue;
+    const overflowRange = HARD_CAP - maxValue;
+    const t = Math.min(1, overflow / overflowRange);
+    return 1 + (OVERFLOW_MAX_RATIO - 1) * t;
+}
+
+/* =====================================================
+   渲染
+===================================================== */
+function renderAll() {
+    renderChartBar();
+    renderChartSelect();
+    renderCharSelector();
+    renderLayerList();
+    renderAxesList();
+    renderValueEditor();
+    renderRadar();
+}
+
+function renderChartBar() {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    document.getElementById('maxValueInput').value = chart.maxValue;
+    document.getElementById('allowOverflow').checked = !!chart.allowOverflow;
+}
+
+function renderChartSelect() {
+    const sel = document.getElementById('chartSelect');
+    sel.innerHTML = '';
+    state.charts.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        if (c.id === state.currentChartId) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+
+function switchChart(id) {
+    state.currentChartId = id;
+    saveState();
+    renderAll();
+}
+
+function addChart() {
+    const name = prompt('新图表名称：', '新图表');
+    if (name === null) return;
+    const chart = createDefaultChart();
+    chart.name = name.trim() || '新图表';
+    state.charts.push(chart);
+    state.currentChartId = chart.id;
+    saveState();
+    renderAll();
+    updateDataStatus();
+}
+
+function renameChart() {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    const name = prompt('修改图表名称：', chart.name);
+    if (name === null) return;
+    chart.name = name.trim() || '未命名';
+    saveState();
+    renderChartSelect();
+}
+
+function deleteChart() {
+    if (state.charts.length <= 1) {
+        alert('至少保留一个图表。');
+        return;
+    }
+    const chart = getCurrentChart();
+    if (!confirm(`确定删除图表「${chart.name}」？`)) return;
+    state.charts = state.charts.filter(c => c.id !== chart.id);
+    state.currentChartId = state.charts[0].id;
+    saveState();
+    renderAll();
+    updateDataStatus();
+}
+
+function onMaxValueInput(val) {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    let n = parseInt(val, 10);
+    if (isNaN(n) || n < 1) n = 1;
+    if (n > 200) n = 200;
+    chart.maxValue = n;
+    saveState();
+    renderValueEditor();
+    renderRadar();
+}
+
+function onAllowOverflowChange(checked) {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    chart.allowOverflow = !!checked;
+    saveState();
+    renderValueEditor();
+    renderRadar();
+}
+
+/* =====================================================
+   角色选择
+===================================================== */
+function renderCharSelector() {
+    const box = document.getElementById('charSelector');
+    box.innerHTML = '';
+    if (state.characters.length === 0) {
+        box.innerHTML = '<div class="empty-state">未加载角色，请检查 characters-data.json 是否存在</div>';
+        return;
+    }
+    state.characters.forEach(c => {
+        const el = document.createElement('span');
+        el.className = 'char-chip' + (state.selectedCharIds.includes(c.id) ? ' active' : '');
+        const avatarSrc = c.avatarFile ? FOLDER_AVATAR + c.avatarFile : '';
+        const avatarHtml = avatarSrc
+            ? `<span class="mini-avatar"><img src="${avatarSrc}" onerror="this.parentNode.textContent='?'"></span>`
+            : `<span class="mini-avatar">${escapeHtml((c.name || '?').slice(0, 1))}</span>`;
+        el.innerHTML = `${avatarHtml}<span>${escapeHtml(c.name)}</span>`;
+        el.onclick = () => toggleCharSelection(c.id);
+        box.appendChild(el);
+    });
+}
+
+function toggleCharSelection(charId) {
+    const idx = state.selectedCharIds.indexOf(charId);
+    if (idx === -1) {
+        state.selectedCharIds.push(charId);
+        state.currentEditCharId = charId;
+    } else {
+        state.selectedCharIds.splice(idx, 1);
+        if (state.currentEditCharId === charId) {
+            state.currentEditCharId = state.selectedCharIds[0] || '';
+        }
+    }
+    saveState();
+    renderCharSelector();
+    renderAxesList();
+    renderValueEditor();
+    renderRadar();
+}
+
+/* =====================================================
+   图层
+===================================================== */
+function renderLayerList() {
+    const box = document.getElementById('layerList');
+    box.innerHTML = '';
+    const chart = getCurrentChart();
+    if (!chart) return;
+
+    chart.layers.forEach((layer, i) => {
+        const row = document.createElement('div');
+        row.className = 'item-line';
+        row.innerHTML = `
+            <span class="idx-badge">${i + 1}</span>
+            <input type="text" value="${escapeAttr(layer.name)}" placeholder="图层名（例如：基础/暴走）" oninput="onLayerNameInput('${layer.id}', this.value)">
+            <input type="text" value="${escapeAttr(layer.note || '')}" placeholder="备注" oninput="onLayerNoteInput('${layer.id}', this.value)" style="flex:0.6;">
+            <span class="line-btn danger" title="删除该图层" onclick="removeLayer('${layer.id}')">×</span>
+        `;
+        box.appendChild(row);
+    });
+
+    if (chart.layers.length === 1) {
+        const tip = document.createElement('div');
+        tip.className = 'hint';
+        tip.textContent = '提示：第 1 顺位是主图层，添加更多顺位会叠加显示，透明度递减。';
+        box.appendChild(tip);
+    }
+}
+
+function onLayerNameInput(layerId, val) {
+    const chart = getCurrentChart();
+    const layer = chart.layers.find(l => l.id === layerId);
+    if (!layer) return;
+    layer.name = val;
+    saveState();
+    renderValueEditor();
+    renderRadar();
+}
+
+function onLayerNoteInput(layerId, val) {
+    const chart = getCurrentChart();
+    const layer = chart.layers.find(l => l.id === layerId);
+    if (!layer) return;
+    layer.note = val;
+    saveState();
+}
+
+function addLayer() {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    const idx = chart.layers.length + 1;
+    chart.layers.push({
+        id: genId('ly'),
+        name: '第 ' + idx + ' 顺位',
+        note: ''
+    });
+    saveState();
+    renderLayerList();
+    renderValueEditor();
+    renderRadar();
+}
+
+function removeLayer(layerId) {
+    const chart = getCurrentChart();
+    if (chart.layers.length <= 1) {
+        alert('至少保留一个图层顺位。');
+        return;
+    }
+    const layer = chart.layers.find(l => l.id === layerId);
+    if (!layer) return;
+    if (!confirm(`删除图层「${layer.name}」？`)) return;
+    chart.layers = chart.layers.filter(l => l.id !== layerId);
+    Object.keys(chart.values || {}).forEach(charId => {
+        Object.keys(chart.values[charId] || {}).forEach(axisId => {
+            if (chart.values[charId][axisId]) {
+                delete chart.values[charId][axisId][layerId];
+            }
+        });
+    });
+    saveState();
+    renderLayerList();
+    renderValueEditor();
+    renderRadar();
+}
+
+/* =====================================================
+   轴（维度）
+===================================================== */
+function renderAxesList() {
+    const chart = getCurrentChart();
+    if (!chart) return;
+
+    const publicBox = document.getElementById('publicAxesList');
+    const privateBox = document.getElementById('privateAxesList');
+    publicBox.innerHTML = '';
+    privateBox.innerHTML = '';
+
+    const pubs = chart.axes.filter(a => !a.isPrivate);
+    if (pubs.length === 0) {
+        publicBox.innerHTML = '<div class="empty-state">还没有公共维度</div>';
+    } else {
+        pubs.forEach(ax => publicBox.appendChild(buildAxisRow(ax, false)));
+    }
+
+    const privs = chart.axes.filter(a => a.isPrivate);
+    if (privs.length === 0) {
+        privateBox.innerHTML = '<div class="empty-state">还没有独立维度</div>';
+    } else {
+        privs.forEach(ax => privateBox.appendChild(buildAxisRow(ax, true)));
+    }
+}
+
+function buildAxisRow(ax, isPrivate) {
+    const row = document.createElement('div');
+    row.className = 'item-line';
+    let ownerName = '';
+    if (isPrivate) {
+        const owner = state.characters.find(c => c.id === ax.ownerId);
+        ownerName = owner ? owner.name : '未知角色';
+    }
+    row.innerHTML = `
+        <span class="idx-badge ${isPrivate ? 'private' : ''}">${isPrivate ? '🔶' : '🔷'}</span>
+        <input type="text" value="${escapeAttr(ax.name)}" placeholder="维度名" oninput="onAxisNameInput('${ax.id}', this.value)">
+        <input type="text" value="${escapeAttr(ax.note || '')}" placeholder="备注" oninput="onAxisNoteInput('${ax.id}', this.value)" style="flex:0.6;">
+        <span class="line-btn danger" title="删除该维度" onclick="removeAxis('${ax.id}')">×</span>
+    `;
+    if (isPrivate && ownerName) row.title = '属于：' + ownerName;
+    return row;
+}
+
+function onAxisNameInput(axisId, val) {
+    const chart = getCurrentChart();
+    const ax = chart.axes.find(a => a.id === axisId);
+    if (!ax) return;
+    ax.name = val;
+    saveState();
+    renderValueEditor();
+    renderRadar();
+}
+
+function onAxisNoteInput(axisId, val) {
+    const chart = getCurrentChart();
+    const ax = chart.axes.find(a => a.id === axisId);
+    if (!ax) return;
+    ax.note = val;
+    saveState();
+    renderValueEditor();
+}
+
+function addAxis(isPrivate) {
+    const chart = getCurrentChart();
+    if (!chart) return;
+    if (isPrivate && !state.currentEditCharId) {
+        alert('请先选择一个角色作为「当前编辑角色」。');
+        return;
+    }
+    const name = prompt(isPrivate ? '独立维度名称（例如：龙化、觉醒）' : '公共维度名称', isPrivate ? '独立维度' : '新维度');
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    chart.axes.push({
+        id: genId('ax'),
+        name: trimmed,
+        note: '',
+        isPrivate: !!isPrivate,
+        ownerId: isPrivate ? state.currentEditCharId : null,
+        scaleNotes: {}
+    });
+    saveState();
+    renderAxesList();
+    renderValueEditor();
+    renderRadar();
+}
+
+function removeAxis(axisId) {
+    const chart = getCurrentChart();
+    const ax = chart.axes.find(a => a.id === axisId);
+    if (!ax) return;
+    if (!confirm(`确定删除维度「${ax.name}」及其数值？`)) return;
+    chart.axes = chart.axes.filter(a => a.id !== axisId);
+    Object.keys(chart.values || {}).forEach(charId => {
+        if (chart.values[charId] && chart.values[charId][axisId]) {
+            delete chart.values[charId][axisId];
+        }
+    });
+    saveState();
+    renderAxesList();
+    renderValueEditor();
+    renderRadar();
+}
+
+/* 刻度备注 */
+function onScaleNoteInput(axisId, scaleValue, val) {
+    const chart = getCurrentChart();
+    const ax = chart.axes.find(a => a.id === axisId);
+    if (!ax) return;
+    if (!ax.scaleNotes) ax.scaleNotes = {};
+    if (val && val.trim()) {
+        ax.scaleNotes[scaleValue] = val;
+    } else {
+        delete ax.scaleNotes[scaleValue];
+    }
+    saveState();
+}
+
+/* =====================================================
+   数值编辑
+===================================================== */
+function renderValueEditor() {
+    const box = document.getElementById('valueEditor');
+    const title = document.getElementById('valueEditTitle');
+    box.innerHTML = '';
+
+    const chart = getCurrentChart();
+    if (!chart) {
+        title.textContent = '📝 数值编辑';
+        box.innerHTML = '<div class="empty-state">无图表</div>';
+        return;
+    }
+
+    if (!state.currentEditCharId) {
+        title.textContent = '📝 数值编辑';
+        box.innerHTML = '<div class="empty-state">请先在上方选择角色</div>';
+        return;
+    }
+
+    const char = state.characters.find(c => c.id === state.currentEditCharId);
+    if (!char) {
+        title.textContent = '📝 数值编辑';
+        box.innerHTML = '<div class="empty-state">角色不存在</div>';
+        return;
+    }
+
+    title.textContent = `📝 数值编辑 - ${char.name}`;
+
+    // 头部
+    const header = document.createElement('div');
+    header.className = 'edit-header';
+    const overflowLabel = chart.allowOverflow
+        ? `<span style="color:#8a6320;font-weight:bold;">允许溢出（封顶 ${HARD_CAP}）</span>`
+        : `<span style="color:#888;">溢出已关闭，超过 ${chart.maxValue} 会被封顶</span>`;
+    header.innerHTML = `
+        <div class="eh-title">🎭 ${escapeHtml(char.name)}</div>
+        <div class="eh-max">
+            最大值：
+            <input type="number" min="1" max="200" value="${chart.maxValue}" oninput="onMaxValueInput(this.value)">
+            ${overflowLabel}
+        </div>
+    `;
+    box.appendChild(header);
+
+    const axes = getVisibleAxes(chart, char.id);
+    if (axes.length === 0) {
+        box.innerHTML += '<div class="empty-state">还没有任何维度</div>';
+        return;
+    }
+
+    axes.forEach(ax => {
+        const isPrivate = ax.isPrivate;
+        const isCollapsed = !!state.collapsedDims[ax.id];
+        const isScaleCollapsed = !!state.collapsedScales[ax.id];
+
+        const block = document.createElement('div');
+        block.className = 'dim-block' + (isPrivate ? ' private' : '') + (isCollapsed ? ' collapsed' : '');
+
+        // 头部
+        const head = document.createElement('div');
+        head.className = 'dim-block-head';
+        const notePreview = ax.note ? `（${escapeHtml(ax.note)}）` : '';
+        head.innerHTML = `
+            <span class="arrow">▼</span>
+            <span class="dim-title">${isPrivate ? '🔶 ' : '📌 '}${escapeHtml(ax.name)}</span>
+            <span class="dim-note-preview">${notePreview}</span>
+        `;
+        head.onclick = () => {
+            state.collapsedDims[ax.id] = !isCollapsed;
+            saveState();
+            renderValueEditor();
+        };
+        block.appendChild(head);
+
+        // 内容
+        const body = document.createElement('div');
+        body.className = 'dim-block-body';
+
+        // 刻度备注块（可折叠）
+        const scaleBlock = document.createElement('div');
+        scaleBlock.className = 'scale-block' + (isScaleCollapsed ? ' collapsed' : '');
+
+        const scaleHead = document.createElement('div');
+        scaleHead.className = 'scale-block-head';
+        scaleHead.innerHTML = `
+            <span class="arrow">▼</span>
+            <span>📏 刻度备注（0 ~ ${chart.maxValue} 每个值的含义）</span>
+        `;
+        scaleHead.onclick = (e) => {
+            e.stopPropagation();
+            state.collapsedScales[ax.id] = !isScaleCollapsed;
+            saveState();
+            renderValueEditor();
+        };
+        scaleBlock.appendChild(scaleHead);
+
+        const scaleBody = document.createElement('div');
+        scaleBody.className = 'scale-block-body';
+        for (let i = 0; i <= chart.maxValue; i++) {
+            const note = (ax.scaleNotes && ax.scaleNotes[i]) || '';
+            const row = document.createElement('div');
+            row.className = 'scale-note-row';
+            row.innerHTML = `
+                <span class="scale-num">${i}</span>
+                <input type="text" value="${escapeAttr(note)}" placeholder="值 ${i} 的含义/表现" oninput="onScaleNoteInput('${ax.id}', ${i}, this.value)">
+            `;
+            scaleBody.appendChild(row);
+        }
+        scaleBlock.appendChild(scaleBody);
+        body.appendChild(scaleBlock);
+
+        // 数值行
+        chart.layers.forEach((layer, layerIdx) => {
+            const v = ensureValue(chart, char.id, ax.id, layer.id);
+            const rawVal = Number(v.value) || 0;
+            const max = chart.maxValue || 10;
+
+            const row = document.createElement('div');
+            row.className = 'value-row';
+            row.dataset.key = `${char.id}|${ax.id}|${layer.id}`;
+
+            const orderClass = 'op' + Math.min(layerIdx, 3);
+
+            const isOverflow = rawVal > max;
+            const overflowAllowed = isOverflow && chart.allowOverflow;
+            const overflowBlocked = isOverflow && !chart.allowOverflow;
+
+            row.innerHTML = `
+                <span class="layer-tag" title="第${layerIdx + 1}顺位${layer.note ? '：' + layer.note : ''}">
+                    <span class="layer-order ${orderClass}">${layerIdx + 1}</span>
+                    ${escapeHtml(layer.name)}
+                </span>
+                <input type="range" min="0" max="${max}" step="1" value="${Math.min(rawVal, max)}" data-role="range"
+                    oninput="onValueChange('${char.id}', '${ax.id}', '${layer.id}', this.value, true)">
+                <input type="number" min="0" value="${rawVal}" class="${overflowAllowed ? 'overflow' : overflowBlocked ? 'overflow blocked' : ''}" data-role="number"
+                    oninput="onValueChange('${char.id}', '${ax.id}', '${layer.id}', this.value, false)">
+                <span class="overflow-tag ${overflowAllowed ? 'show' : ''} ${overflowBlocked ? 'blocked show' : ''}" data-role="tag">
+                    ${overflowAllowed ? '爆表' : overflowBlocked ? '封顶' : ''}
+                </span>
+                <span class="note-toggle ${v.note ? 'has-note' : ''}" title="备注" onclick="toggleNoteExpanded('${char.id}|${ax.id}|${layer.id}')">📝</span>
+            `;
+            body.appendChild(row);
+
+            // 数值备注框
+            const noteKey = `${char.id}|${ax.id}|${layer.id}`;
+            if (state.expandedNotes[noteKey]) {
+                const noteBox = document.createElement('div');
+                noteBox.className = 'value-note-box';
+                noteBox.innerHTML = `
+                    <textarea placeholder="给这个数值写点备注…" oninput="onValueNoteInput('${char.id}', '${ax.id}', '${layer.id}', this.value)">${escapeHtml(v.note || '')}</textarea>
+                `;
+                body.appendChild(noteBox);
+            }
+        });
+
+        block.appendChild(body);
+        box.appendChild(block);
+    });
+}
+
+function onValueChange(charId, axisId, layerId, rawVal, fromRange) {
+    const chart = getCurrentChart();
+    if (!chart) return;
+
+    let n = parseFloat(rawVal);
+    if (isNaN(n) || n < 0) n = 0;
+    n = Math.round(n);
+
+    const v = ensureValue(chart, charId, axisId, layerId);
+    v.value = n;
+
+    // 更新同行其他元素
+    const row = document.querySelector(`.value-row[data-key="${charId}|${axisId}|${layerId}"]`);
+    if (row) {
+        const range = row.querySelector('input[data-role="range"]');
+        const num = row.querySelector('input[data-role="number"]');
+        const tag = row.querySelector('[data-role="tag"]');
+        const max = chart.maxValue || 10;
+
+        if (fromRange) {
+            // 滑块拖动 → 数字同步
+            num.value = n;
+        } else {
+            // 数字输入 → 滑块同步（滑块最多到 max）
+            range.value = Math.min(n, max);
+        }
+
+        // 溢出显示
+        const isOverflow = n > max;
+        const overflowAllowed = isOverflow && chart.allowOverflow;
+        const overflowBlocked = isOverflow && !chart.allowOverflow;
+
+        num.classList.toggle('overflow', overflowAllowed);
+        num.classList.toggle('blocked', overflowBlocked);
+
+        if (tag) {
+            tag.classList.toggle('show', isOverflow);
+            tag.classList.toggle('blocked', overflowBlocked);
+            tag.textContent = overflowAllowed ? '爆表' : overflowBlocked ? '封顶' : '';
+        }
+    }
+
+    saveState();
+    renderRadar();
+}
+
+function onValueNoteInput(charId, axisId, layerId, val) {
+    const chart = getCurrentChart();
+    const v = ensureValue(chart, charId, axisId, layerId);
+    v.note = val;
+    saveState();
+    const row = document.querySelector(`.value-row[data-key="${charId}|${axisId}|${layerId}"]`);
+    if (row) {
+        const btn = row.querySelector('.note-toggle');
+        if (btn) {
+            if (val.trim()) btn.classList.add('has-note');
+            else btn.classList.remove('has-note');
+        }
+    }
+}
+
+function toggleNoteExpanded(key) {
+    state.expandedNotes[key] = !state.expandedNotes[key];
+    saveState();
+    renderValueEditor();
+}
+
+/* =====================================================
+   雷达图
+===================================================== */
+function renderRadar() {
+    const canvas = document.getElementById('radarCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W / 2;
+    const cy = H / 2;
+
+    ctx.clearRect(0, 0, W, H);
+
+    const chart = getCurrentChart();
+    if (!chart) return;
+
+    let axesForDraw;
+    let singleChar = null;
+    if (state.selectedCharIds.length === 1) {
+        singleChar = state.characters.find(c => c.id === state.selectedCharIds[0]);
+        axesForDraw = getVisibleAxes(chart, singleChar?.id);
+    } else {
+        axesForDraw = getVisibleAxes(chart, null);
+    }
+
+    const n = axesForDraw.length;
+    if (n === 0) {
+        ctx.fillStyle = '#a07a86';
+        ctx.font = '14px "Microsoft YaHei", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('请添加维度', cx, cy);
+        return;
+    }
+
+    const maxRadius = Math.min(W, H) * 0.30;
+    const maxValue = chart.maxValue || 10;
+    const allowOverflow = !!chart.allowOverflow;
+
+    const drawAll = (avatarImg) => {
+        ctx.clearRect(0, 0, W, H);
+
+        if (avatarImg) {
+            drawAvatarBg(ctx, avatarImg, cx, cy, maxRadius * 1.05);
+        }
+
+        // 环与轴
+        drawRadarGrid(ctx, cx, cy, maxRadius, n, axesForDraw, maxValue, allowOverflow);
+
+        // 多边形
+        drawRadarPolygons(ctx, cx, cy, maxRadius, n, axesForDraw, maxValue, allowOverflow, chart);
+    };
+
+    if (singleChar && singleChar.avatarFile) {
+        const img = new Image();
+        img.onload = () => drawAll(img);
+        img.onerror = () => drawAll(null);
+        img.src = FOLDER_AVATAR + singleChar.avatarFile;
+    } else {
+        drawAll(null);
+    }
+}
+
+function drawAvatarBg(ctx, img, cx, cy, radius) {
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
+    const ratio = img.width / img.height;
+    let w, h;
+    if (ratio > 1) {
+        h = radius * 2;
+        w = h * ratio;
+    } else {
+        w = radius * 2;
+        h = w / ratio;
+    }
+    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+    ctx.restore();
+}
+
+function drawRadarGrid(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow) {
+    // 正常环（0 ~ maxValue）
+    const rings = 5;
+    for (let r = 1; r <= rings; r++) {
+        const radius = (maxRadius * r) / rings;
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+            const x = cx + Math.cos(angle) * radius;
+            const y = cy + Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = r === rings ? '#ffb8ca' : '#ffd6e3';
+        ctx.lineWidth = r === rings ? 2 : 1;
+        ctx.stroke();
+    }
+
+    // 如果允许溢出，画一条“爆表圈”，超出部分从这里开始
+    if (allowOverflow && maxValue < HARD_CAP) {
+        const overflowRadius = maxRadius * OVERFLOW_MAX_RATIO;
+        ctx.beginPath();
+        ctx.arc(cx, cy, overflowRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = '#f5b942';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 标一个“爆表”小提示在爆表圈顶部
+        ctx.font = 'bold 10px "Microsoft YaHei", sans-serif';
+        ctx.fillStyle = '#8a6320';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('爆表上限 ' + HARD_CAP, cx, cy - overflowRadius - 4);
+    }
+
+    // 轴线
+    for (let i = 0; i < n; i++) {
+        const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+        const x = cx + Math.cos(angle) * maxRadius;
+        const y = cy + Math.sin(angle) * maxRadius;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = '#ffe4ec';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    // 轴标签
+    ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < n; i++) {
+        const ax = axes[i];
+        const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+        const labelR = maxRadius + 22;
+        const x = cx + Math.cos(angle) * labelR;
+        const y = cy + Math.sin(angle) * labelR;
+        ctx.fillStyle = ax.isPrivate ? '#8a6320' : '#ff5c8a';
+        ctx.fillText(ax.name, x, y);
+    }
+}
+
+function drawRadarPolygons(ctx, cx, cy, maxRadius, n, axes, maxValue, allowOverflow, chart) {
+    state.selectedCharIds.forEach((charId, charIdx) => {
+        const char = state.characters.find(c => c.id === charId);
+        if (!char) return;
+        const baseColor = PALETTE[charIdx % PALETTE.length];
+
+        chart.layers.forEach((layer, layerIdx) => {
+            const borderAlpha = Math.max(0.25, 1 / (layerIdx + 1));
+            const fillAlpha = Math.max(0.08, 0.22 / (layerIdx + 1));
+
+            const points = axes.map((ax, i) => {
+                const v = getValueAt(chart, charId, ax.id, layer.id);
+                const ratio = computeRadiusRatio(v, maxValue, allowOverflow);
+                const angle = (Math.PI * 2 * i) / n - Math.PI / 2;
+                return {
+                    x: cx + Math.cos(angle) * maxRadius * ratio,
+                    y: cy + Math.sin(angle) * maxRadius * ratio,
+                    value: v,
+                    ratio
+                };
+            });
+
+            // 填充
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+
+            ctx.save();
+            ctx.globalAlpha = fillAlpha;
+            ctx.fillStyle = baseColor;
+            ctx.fill();
+            ctx.restore();
+
+            // 边框
+            ctx.save();
+            ctx.globalAlpha = borderAlpha;
+            ctx.strokeStyle = baseColor;
+            ctx.lineWidth = layerIdx === 0 ? 2 : 1.5;
+            ctx.setLineDash(layerIdx === 0 ? [] : [5, 4]);
+            ctx.stroke();
+            ctx.restore();
+
+            // 顶点
+            ctx.save();
+            ctx.globalAlpha = borderAlpha;
+            points.forEach(p => {
+                const isOverflowPoint = p.ratio > 1.0001;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, layerIdx === 0 ? 3.5 : 2.5, 0, Math.PI * 2);
+                if (isOverflowPoint) {
+                    ctx.fillStyle = '#f5b942';
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                } else if (layerIdx === 0) {
+                    ctx.fillStyle = baseColor;
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#fff';
+                    ctx.fill();
+                    ctx.strokeStyle = baseColor;
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+            });
+            ctx.restore();
+
+            // 顶点数值（只在第一层绘制，避免重叠）
+            if (layerIdx === 0) {
+                ctx.save();
+                ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                points.forEach(p => {
+                    const isOverflowPoint = p.ratio > 1.0001;
+                    const label = String(p.value);
+                    // 计算偏移：远离圆心方向
+                    const dx = p.x - cx;
+                    const dy = p.y - cy;
+                    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+                    const offX = (dx / len) * 12;
+                    const offY = (dy / len) * 12;
+                    const tx = p.x + offX;
+                    const ty = p.y + offY;
+
+                    // 白底描边
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#fff';
+                    ctx.strokeText(label, tx, ty);
+                    ctx.fillStyle = isOverflowPoint ? '#c94a4a' : '#ff5c8a';
+                    ctx.fillText(label, tx, ty);
+                });
+                ctx.restore();
+            }
+        });
+
+        // 角色名（在第一个轴附近）
+        const firstAxis = axes[0];
+        if (firstAxis) {
+            const v = getValueAt(chart, charId, firstAxis.id, chart.layers[0].id);
+            const ratio = computeRadiusRatio(v, maxValue, allowOverflow);
+            const angle = -Math.PI / 2;
+            const px = cx + Math.cos(angle) * maxRadius * ratio;
+            const py = cy + Math.sin(angle) * maxRadius * ratio;
+            ctx.font = 'bold 11px "Microsoft YaHei", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = baseColor;
+            ctx.fillText(char.name, px + 8, py - 10);
+        }
+    });
+}
+
+/* =====================================================
+   导入导出
+===================================================== */
+function exportData() {
+    const out = {
+        characters: state.characters,
+        charts: state.charts,
+        currentChartId: state.currentChartId,
+        collapsedDims: state.collapsedDims,
+        collapsedScales: state.collapsedScales,
+        expandedNotes: state.expandedNotes,
+        version: state.version
+    };
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'charts-data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const parsed = JSON.parse(e.target.result);
+            if (!parsed || typeof parsed !== 'object') throw new Error('格式错误');
+
+            if (Array.isArray(parsed.charts) && parsed.charts.length > 0) {
+                state.charts = parsed.charts.map(normalizeChart);
+                state.currentChartId = parsed.currentChartId || parsed.charts[0].id;
+            }
+            if (parsed.collapsedDims && typeof parsed.collapsedDims === 'object') {
+                state.collapsedDims = parsed.collapsedDims;
+            }
+            if (parsed.collapsedScales && typeof parsed.collapsedScales === 'object') {
+                state.collapsedScales = parsed.collapsedScales;
+            }
+            if (parsed.expandedNotes && typeof parsed.expandedNotes === 'object') {
+                state.expandedNotes = parsed.expandedNotes;
+            }
+            if (Array.isArray(parsed.characters) && parsed.characters.length > 0) {
+                state.characters = parsed.characters.map(c => ({
+                    id: c.id,
+                    name: c.name || '未命名',
+                    avatarFile: c.avatarFile || ''
+                }));
+            }
+
+            const charIds = new Set(state.characters.map(c => c.id));
+            state.selectedCharIds = state.selectedCharIds.filter(id => charIds.has(id));
+            if (state.selectedCharIds.length === 0 && state.characters.length > 0) {
+                state.selectedCharIds = [state.characters[0].id];
+            }
+            if (!state.currentEditCharId || !charIds.has(state.currentEditCharId)) {
+                state.currentEditCharId = state.selectedCharIds[0] || '';
+            }
+
+            saveState();
+            updateDataStatus();
+            renderAll();
+            alert('导入成功');
+        } catch (err) {
+            alert('导入失败：' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+async function reloadCharactersFromFile() {
+    const chars = await loadCharactersFromFile();
+    if (!chars) {
+        alert('无法读取 characters-data.json，请检查文件是否存在。');
+        return;
+    }
+    state.characters = chars;
+
+    const charIds = new Set(state.characters.map(c => c.id));
+    state.selectedCharIds = state.selectedCharIds.filter(id => charIds.has(id));
+    if (state.selectedCharIds.length === 0 && state.characters.length > 0) {
+        state.selectedCharIds = [state.characters[0].id];
+    }
+    if (!state.currentEditCharId || !charIds.has(state.currentEditCharId)) {
+        state.currentEditCharId = state.selectedCharIds[0] || '';
+    }
+
+    saveState();
+    updateDataStatus();
+    renderAll();
+    alert(`已重新读取 ${chars.length} 个角色。`);
+}
+
+function resetAll() {
+    if (!confirm('确定重置所有图表（不清除角色列表）？')) return;
+    state.charts = [createDefaultChart()];
+    state.currentChartId = state.charts[0].id;
+    state.collapsedDims = {};
+    state.collapsedScales = {};
+    state.expandedNotes = {};
+    saveState();
+    renderAll();
+    updateDataStatus();
+}
+
+/* =====================================================
+   工具
+===================================================== */
+function escapeHtml(s) {
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+/* =====================================================
+   启动
+===================================================== */
+init();
+</script>
+</body>
+</html>
